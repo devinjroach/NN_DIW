@@ -85,9 +85,6 @@ class FitTorch(torch.nn.Module):
         self.load_state_dict(state_dict)
 
 # make fitting data
-# X is a 30x1 tensor, rows are data points and columns are features (i.e. number of network inputs)
-# Y is a 30x1 tensor, rows are data point targets and columns are number of targets for each data point (i.e. number of network outputs)
-
 # get inputs and outputs from .mat files
 
 input_mat = sio.loadmat("../../inputs.mat")
