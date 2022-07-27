@@ -15,3 +15,7 @@ Simple 1D regression network that fits a parabola. This should be easily extende
 `examples/diw/nn_2.py`
 
 Applying this simple regression example to the DIW training set. Layer sizes and training weights can be tweaked to give desired results.
+
+`examples/diw_matrix/nn_quadratic.py`
+
+Simple 1D regression network that fits a parabola again, except this time using matrix multiplication and weight matrices. From this formulation, it's easier to do the inverse operation by inverting the matrices and multiplying backwards. This may only be possible, however, if all matrices in the layers have the shame shape, due to inverse properties of matrix multiplication.
