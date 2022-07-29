@@ -27,7 +27,8 @@ def create_torch_network(layer_sizes):
         layers.append(torch.nn.Linear(layer_sizes[0], layer_sizes[0]))
         for i, layer in enumerate(layer_sizes):
             layers.append(torch.nn.Linear(layer_sizes[i], layer_sizes[i + 1]))
-            layers.append(torch.nn.Softplus())
+            #layers.append(torch.nn.Softplus())
+            layers.append(torch.nn.LeakyReLU(negative_slope=0.03))
     except IndexError:
         layers.pop()
     return torch.nn.Sequential(*layers)
@@ -123,7 +124,7 @@ model = FitTorch(network_architecture)
 
 # get ready for fitting
 
-nepochs = 100000
+nepochs = 500000
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 loss_function = torch.nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0005)
