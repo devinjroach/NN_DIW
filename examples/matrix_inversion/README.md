@@ -15,6 +15,4 @@ This requires thinking of the network as a sequence of matrices being multiplied
 
 This simple  example below illustrates the matrix form of networks, and how we invert them, for a 2-node network:
 
-
-
-
+![simple_network](https://user-images.githubusercontent.com/11083811/181841443-f0cb6114-9d0d-458f-8ac9-36cb7cbd1a27.jpg)
