@@ -92,6 +92,8 @@ inputs = input_mat["inputs"].astype(np.double).T
 output_mat = sio.loadmat("../../outputs.mat")
 outputs = output_mat["outputs"].astype(np.double).T
 
+
+
 # convert numpy arrays to torch tensors
 
 X = torch.from_numpy(inputs).float()
@@ -102,7 +104,9 @@ targets = Y
 
 # set neural network parameters
 
-layer_sizes = [4,10,100,100,100,1]
+#layer_sizes = [4,10,100,100,100,1]
+#layer_sizes = [4,4,4,4,4,1]
+layer_sizes = [4,4,4,4,4,4]
 
 # make neural network architecture
 
@@ -128,9 +132,11 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.0005)
 
 for epoch in range(nepochs):
     #outputs = model(X, indices, num_atoms)
-    outputs = model(X)
+    outputs_model = model(X)
     # only use first output in loss function (first column), likewise for targets 
-    loss = loss_function(outputs[:,0], targets[:,0])
+    loss = loss_function(outputs_model[:,0], targets[:,0])
+    # if we wanna force another output to be near some value (e.g. 2) like this:
+    # loss = loss + weight*loss_function(outputs_model[:,1], 2)
     if (epoch % 10 == 0):
         print(f'epoch: {epoch}, loss = {loss.item():.4f}')
         optimizer.zero_grad()
@@ -139,11 +145,16 @@ for epoch in range(nepochs):
 
 # plot
 
-"""
-predicted = model(X).detach().numpy()
-plt.plot(X.numpy(), Y.numpy(), 'ro')
-plt.plot(X.numpy(), predicted, 'b')
-plt.savefig("fit.png")
-"""
+xaxis = np.arange(0,196,1,dtype=int)
+yaxis = outputs[:,0]
+#print(np.shape(xaxis))
+#print(np.shape(yaxis))
+#print(yaxis)
+
+plt.plot(xaxis, yaxis, 'r-')
+plt.plot(xaxis, outputs_model.detach().numpy()[:,0], 'b-')
+#plt.plot(X.numpy(), predicted, 'b')
+#plt.savefig("fit.png")
+plt.show()
 
 
