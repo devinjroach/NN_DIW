@@ -55,7 +55,8 @@ class Nonlinear(nn.Module):
             bias = getattr(self, f"layer_{indx}_bias")
             x = x.matmul(weights).add(bias)
             if (indx<(self.nlayers-2)): # don't apply activation on last layer
-                x = x.sigmoid() # need to use leaky relu
+                #x = x.sigmoid() # need to use leaky relu
+                x = torch.nn.functional.leaky_relu(x, negative_slope=0.03)
         #"""
         """
         x = x.matmul(self.layer_1_weights).add(self.layer_1_bias)
@@ -109,7 +110,7 @@ targets = Y
 # set neural network parameters
 
 #layer_sizes = [4,4,4] # 3 layer total (input, hidden, and output)
-layer_sizes = [4,4,4,4,4,4]
+layer_sizes = [4,4,4,4,4,4,4,4,4]
 
 # define model
 
@@ -122,11 +123,11 @@ network = Nonlinear(layer_sizes)
 
 # Define optimizer.
 #optim = torch.optim.SGD(nonlinear_model.parameters(), lr=0.2)
-optim = torch.optim.Adam(network.parameters(), lr=0.01)
+optim = torch.optim.Adam(network.parameters(), lr=0.005)
 loss_function = nn.MSELoss()
 
 # Train the model 
-outputs_model = train(X, Y, network, loss_function, optim, num_epochs=20000)
+outputs_model = train(X, Y, network, loss_function, optim, num_epochs=200000)
 
 print("Mean/max 3rd output:")
 print(torch.mean(outputs_model[:,2]))
