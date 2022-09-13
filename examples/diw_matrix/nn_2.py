@@ -47,8 +47,8 @@ class Nonlinear(nn.Module):
     #                          given some inputs "x".
     def forward(self, x):
        
-        print(x.size())
-        print(self.layer_0_weights.size())
+        #print(x.size())
+        #print(self.layer_0_weights.size())
         #""" 
         for indx, layer_size in enumerate(self.layer_sizes[:-1]):
             weights = getattr(self, f"layer_{indx}_weights")
@@ -71,6 +71,25 @@ class Nonlinear(nn.Module):
         self.layer_2_weights.data = tensor([[0.3], [-0.7]])
         self.layer_2_bias.data = tensor([0.2])
 
+def train(X, Y, model, loss_function, optim, num_epochs):
+    loss_history = []
+
+    for epoch in range(num_epochs):
+        
+        epoch_loss = 0.0
+        
+        Y_pred = model(X)
+        #print(Y_pred.shape)
+        loss = loss_function(Y_pred[:,0], Y[:,0])
+        if (epoch % 10 == 0): 
+            print(f'epoch: {epoch}, loss = {loss.item():.4f}')
+        
+        loss.backward()
+        optim.step()
+        optim.zero_grad()
+
+    return Y_pred
+
 # make fitting data
 # get inputs and outputs from .mat files
 
@@ -90,7 +109,7 @@ targets = Y
 # set neural network parameters
 
 #layer_sizes = [4,4,4] # 3 layer total (input, hidden, and output)
-layer_sizes = [4,4,4,4]
+layer_sizes = [4,4,4,4,4,4]
 
 # define model
 
@@ -101,9 +120,22 @@ network = Nonlinear(layer_sizes)
 #print(dir(network))
 #print(network.layer_0_weights)
 
-# feed forward
+# Define optimizer.
+#optim = torch.optim.SGD(nonlinear_model.parameters(), lr=0.2)
+optim = torch.optim.Adam(network.parameters(), lr=0.005)
+loss_function = nn.MSELoss()
 
-Y_pred = network(X)
+# Train the model 
+outputs_model = train(X, Y, network, loss_function, optim, num_epochs=200000)
 
-print(Y_pred.size())
+xaxis = np.arange(0,196,1,dtype=int)
+yaxis = outputs[:,0]
+#print(np.shape(xaxis))
+#print(np.shape(yaxis))
+#print(yaxis)
 
+plt.plot(xaxis, yaxis, 'r-')
+plt.plot(xaxis, outputs_model.detach().numpy()[:,0], 'b-')
+#plt.plot(X.numpy(), predicted, 'b')
+#plt.savefig("fit.png")
+plt.show()
