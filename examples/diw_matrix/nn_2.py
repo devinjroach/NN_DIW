@@ -122,11 +122,18 @@ network = Nonlinear(layer_sizes)
 
 # Define optimizer.
 #optim = torch.optim.SGD(nonlinear_model.parameters(), lr=0.2)
-optim = torch.optim.Adam(network.parameters(), lr=0.005)
+optim = torch.optim.Adam(network.parameters(), lr=0.01)
 loss_function = nn.MSELoss()
 
 # Train the model 
-outputs_model = train(X, Y, network, loss_function, optim, num_epochs=200000)
+outputs_model = train(X, Y, network, loss_function, optim, num_epochs=20000)
+
+print("Mean/max 3rd output:")
+print(torch.mean(outputs_model[:,2]))
+print(torch.max(torch.abs(outputs_model[:,2])))
+print("Mean/max 4th output:")
+print(torch.mean(outputs_model[:,3]))
+print(torch.max(torch.abs(outputs_model[:,3])))
 
 xaxis = np.arange(0,196,1,dtype=int)
 yaxis = outputs[:,0]
