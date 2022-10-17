@@ -8,6 +8,7 @@ import torch
 from torch import nn
 from torch import tensor
 import scipy.io as sio
+import time
 
 def create_torch_network(layer_sizes):
     """
@@ -124,10 +125,12 @@ model = FitTorch(network_architecture)
 
 # get ready for fitting
 
-nepochs = 500000
+nepochs = 50000
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 loss_function = torch.nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0005)
+
+start = time.time()
 
 # training loop
 
@@ -145,6 +148,12 @@ for epoch in range(nepochs):
         optimizer.step()
 
 # plot
+
+end = time.time()
+
+time_elapsed = end - start
+time_per_epoch = time_elapsed/nepochs
+print(f"time per epoch: {time_per_epoch} s")
 
 xaxis = np.arange(0,196,1,dtype=int)
 yaxis = outputs[:,0]

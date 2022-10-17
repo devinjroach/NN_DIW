@@ -71,6 +71,8 @@ class Nonlinear(nn.Module):
     # Feed fordward function - here we use matrix/tensor operations to calculate the output of the neural network
     #                          given some inputs "x".
     def forward(self, x):
+        print(x.size())
+        print(self.layer_1_weights.size())
         x = x.matmul(self.layer_1_weights).add(self.layer_1_bias)
         x = x.sigmoid()
         x = x.matmul(self.layer_2_weights).add(self.layer_2_bias)

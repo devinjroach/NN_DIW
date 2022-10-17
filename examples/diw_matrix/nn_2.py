@@ -81,7 +81,10 @@ def train(X, Y, model, loss_function, optim, num_epochs):
         
         Y_pred = model(X)
         #print(Y_pred.shape)
-        loss = loss_function(Y_pred[:,0], Y[:,0])
+        #loss = loss_function(Y_pred[:,0], Y[:,0]) #+ loss_function(Y_pred[:,1], Y[:,1])
+        #loss = loss_function(Y_pred[:,0], Y[:,0]) + 100.*loss_function(Y_pred[:,1], Y[:,1])
+        loss = loss_function(Y_pred[:,0], Y[:,0]) #+ loss_function(Y_pred[:,1], Y[:,0]) #+ 0.5*loss_function(Y_pred[:,0], Y_pred[:,1])
+        #loss = loss_function(Y_pred[:,0], Y[:,0]) + loss_function(Y_pred[:,1], Y[:,0]) + loss_function(Y_pred[:,2], Y[:,0]) + loss_function(Y_pred[:,3], Y[:,0])
         if (epoch % 10 == 0): 
             print(f'epoch: {epoch}, loss = {loss.item():.4f}')
         
@@ -110,7 +113,7 @@ targets = Y
 # set neural network parameters
 
 #layer_sizes = [4,4,4] # 3 layer total (input, hidden, and output)
-layer_sizes = [4,4,4,4,4,4,4,4,4]
+layer_sizes = [4,4,4,4,4,4]
 
 # define model
 
@@ -123,11 +126,11 @@ network = Nonlinear(layer_sizes)
 
 # Define optimizer.
 #optim = torch.optim.SGD(nonlinear_model.parameters(), lr=0.2)
-optim = torch.optim.Adam(network.parameters(), lr=0.005)
+optim = torch.optim.Adam(network.parameters(), lr=0.0005)
 loss_function = nn.MSELoss()
 
 # Train the model 
-outputs_model = train(X, Y, network, loss_function, optim, num_epochs=200000)
+outputs_model = train(X, Y, network, loss_function, optim, num_epochs=80000)
 
 print("Mean/max 3rd output:")
 print(torch.mean(outputs_model[:,2]))
@@ -143,7 +146,22 @@ yaxis = outputs[:,0]
 #print(yaxis)
 
 plt.plot(xaxis, yaxis, 'r-')
-plt.plot(xaxis, outputs_model.detach().numpy()[:,0], 'b-')
+plt.plot(xaxis, outputs_model.detach().numpy()[:,0], 'bo')
 #plt.plot(X.numpy(), predicted, 'b')
-#plt.savefig("fit.png")
-plt.show()
+plt.savefig("first_output.png", dpi=500)
+#plt.show()
+
+"""
+plt.clf()
+plt.plot(xaxis, outputs[:,0], 'r-')
+plt.plot(xaxis, outputs_model.detach().numpy()[:,1], 'bo')
+plt.savefig("second_output.png", dpi=500)
+"""
+
+plt.clf()
+plt.plot(xaxis, outputs[:,0], 'r-')
+plt.plot(xaxis, outputs_model.detach().numpy()[:,0], 'bo')
+plt.plot(xaxis, outputs_model.detach().numpy()[:,1], 'ko', markersize=0.5)
+plt.plot(xaxis, outputs_model.detach().numpy()[:,2], 'go', markersize=0.5)
+plt.plot(xaxis, outputs_model.detach().numpy()[:,3], 'ro', markersize=0.5)
+plt.savefig("all_output.png", dpi=500)
