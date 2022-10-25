@@ -1,4 +1,4 @@
-# Import modules.
+# import modules
 
 from matplotlib import pyplot as plt
 import torch
@@ -72,32 +72,7 @@ class Nonlinear(nn.Module):
         self.layer_2_weights.data = tensor([[0.3], [-0.7]])
         self.layer_2_bias.data = tensor([0.2])
 
-def train(X, Y, model, loss_function, optim, num_epochs):
-    loss_history = []
-
-    for epoch in range(num_epochs):
-        
-        epoch_loss = 0.0
-        
-        Y_pred = model(X)
-        #print(Y_pred.shape)
-        #loss = loss_function(Y_pred[:,0], Y[:,0]) #+ loss_function(Y_pred[:,1], Y[:,1])
-        #loss = loss_function(Y_pred[:,0], Y[:,0]) + 100.*loss_function(Y_pred[:,1], Y[:,1])
-        loss = loss_function(Y_pred[:,0], Y[:,0]) #+ loss_function(Y_pred[:,1], Y[:,0]) #+ 0.5*loss_function(Y_pred[:,0], Y_pred[:,1])
-        #loss = loss_function(Y_pred[:,0], Y[:,0]) + loss_function(Y_pred[:,1], Y[:,0]) + loss_function(Y_pred[:,2], Y[:,0]) + loss_function(Y_pred[:,3], Y[:,0])
-        if (epoch % 10 == 0): 
-            print(f'epoch: {epoch}, loss = {loss.item():.4f}')
-        
-        loss.backward()
-        optim.step()
-        optim.zero_grad()
-
-    
-
-    return Y_pred
-
-# make fitting data
-# get inputs and outputs from .mat files
+# get data
 
 input_mat = sio.loadmat("../../inputs.mat")
 inputs = input_mat["inputs"].astype(np.double).T
@@ -112,66 +87,102 @@ print(X.shape)
 print(Y.shape)
 targets = Y
 
-# set neural network parameters
+model = torch.load("model.pt")
 
-#layer_sizes = [4,4,4] # 3 layer total (input, hidden, and output)
-layer_sizes = [4,4,4,4,4,4]
+print(model)
 
-# define model
+# Print model's state_dict
+#print("Model's state_dict:")
+for param_tensor in model.state_dict():
+    print(param_tensor)
+    #print(model.state_dict()[param_tensor])
+    #print(param_tensor, "\t", model.state_dict()[param_tensor].size())
 
-network = Nonlinear(layer_sizes)
+weights = []
+weights_inv = []
+biases = []
+for i, param_tensor in enumerate(model.state_dict()):
+    if ("weights" in param_tensor):
+        w = model.state_dict()[param_tensor].numpy()
+        weights.append(model.state_dict()[param_tensor].numpy())
+        weights_inv.append(np.linalg.inv(w))
+    elif ("bias" in param_tensor):
+        arr = model.state_dict()[param_tensor].numpy()
+        #arr = np.array([arr]).T
+        biases.append(arr)
 
-# check attributes of the class
-#print(vars(network))
-#print(dir(network))
-#print(network.layer_0_weights)
+# reverse weights list so we can go backwards later
 
-# Define optimizer.
-#optim = torch.optim.SGD(nonlinear_model.parameters(), lr=0.2)
-optim = torch.optim.Adam(network.parameters(), lr=0.0005)
-loss_function = nn.MSELoss()
+weights_inv = weights_inv[::-1]
+biases_inv = biases[::-1]
 
-# Train the model 
-outputs_model = train(X, Y, network, loss_function, optim, num_epochs=80000)
+num_hidden_layers = len(weights)
+assert(len(weights)==len(biases))
 
-torch.save(network, "network.pt")
+def leaky_relu(x):
+    y1 = ((x > 0) * x)                                                 
+    y2 = ((x <= 0) * x * leaky_relu_slope)                                         
+    value = y1 + y2  
+    return value
 
-print("Mean/max 2nd output:")
-print(torch.mean(outputs_model[:,1]))
-print(torch.max(torch.abs(outputs_model[:,1])))
-print(f"min max: {torch.min(outputs_model[:,1])} {torch.max(outputs_model[:,1])}")
-print("Mean/max 3rd output:")
-print(torch.mean(outputs_model[:,2]))
-print(torch.max(torch.abs(outputs_model[:,2])))
-print(f"min max: {torch.min(outputs_model[:,2])} {torch.max(outputs_model[:,2])}")
-print("Mean/max 4th output:")
-print(torch.mean(outputs_model[:,3]))
-print(torch.max(torch.abs(outputs_model[:,3])))
-print(f"min max: {torch.min(outputs_model[:,3])} {torch.max(outputs_model[:,3])}")
+def inv_leaky_relu(x):
+    y1 = ((x > 0) * x)
+    y2 = ((x <=0) * x * (1./leaky_relu_slope))
+    value = y1 + y2
+    return value
+    
 
-xaxis = np.arange(0,196,1,dtype=int)
-yaxis = outputs[:,0]
-#print(np.shape(xaxis))
-#print(np.shape(yaxis))
-#print(yaxis)
+size = 4
+leaky_relu_slope = 0.03
 
-plt.plot(xaxis, yaxis, 'r-')
-plt.plot(xaxis, outputs_model.detach().numpy()[:,0], 'bo')
-#plt.plot(X.numpy(), predicted, 'b')
-plt.savefig("first_output.png", dpi=500)
-#plt.show()
+test_value = -100
+# this asserts that the inverse activation is coded correctly
+assert (test_value == inv_leaky_relu(leaky_relu(test_value)))
 
-"""
-plt.clf()
-plt.plot(xaxis, outputs[:,0], 'r-')
-plt.plot(xaxis, outputs_model.detach().numpy()[:,1], 'bo')
-plt.savefig("second_output.png", dpi=500)
-"""
+x = np.random.rand(1,size)
+x_torch = torch.from_numpy(x).float()
+print("----- inputs:")
+print(x)
 
-plt.clf()
-plt.plot(xaxis, outputs[:,0], 'r-')
-plt.plot(xaxis, outputs_model.detach().numpy()[:,0], 'bo')
-plt.plot(xaxis, outputs_model.detach().numpy()[:,1], 'ko', markersize=0.5)
-plt.plot(xaxis, outputs_model.detach().numpy()[:,2], 'go', markersize=0.5)
-plt.plot(xaxis, outputs_model.detach().numpy()[:,3], 'ro', markersize=0.5)
-plt.savefig("all_output.png", dpi=500)
+model.eval()
+outputs_model = model(x_torch)
+print("----- outputs_model:")
+print(outputs_model)
+
+# Apply this input through all the layers
+for l in range(0,num_hidden_layers):
+    if (l==0):
+        input = x 
+    else:
+        input = output
+    if (l<num_hidden_layers-1):
+        #output = leaky_relu(np.matmul(weights[l], input) + biases[l])
+        output = leaky_relu(np.matmul(input, weights[l]) + biases[l])
+    elif (l==num_hidden_layers-1):
+        output = np.matmul(input, weights[l]) + biases[l]
+    print(np.shape(output))
+
+print(output)
+#assert(False)
+
+# now go backwards to invert 
+print("Inverting...")
+start = time.time()
+
+# Apply this input through all the layers
+for l in range(0,num_hidden_layers):
+    if (l==0):
+        input = outputs_model.detach().numpy()
+    else:
+        input = output
+    if (l<num_hidden_layers-1):
+        #output = inv_leaky_relu(np.matmul(weights_inv[l],input - biases_inv[l]))
+        output = inv_leaky_relu(np.matmul(input - biases_inv[l],weights_inv[l]))
+    elif (l==num_hidden_layers-1):
+        #output = np.matmul(weights_inv[l],input - biases_inv[l])
+        output = np.matmul(input - biases_inv[l],weights_inv[l])
+    print(np.shape(output))
+
+print(time.time()-start)
+print("----- Recovered input:")
+print(output)
