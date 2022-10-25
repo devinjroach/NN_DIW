@@ -132,7 +132,7 @@ for i in range(0,ndat):
 #layer_sizes = [4,4,4,4,4,4]
 #layer_sizes = [4,4,4,4,4,4,4,4,4]
 #layer_sizes = [4,4,4,4,4,4,4,4,4]
-layer_sizes = [4,4,4,4,4]
+layer_sizes = [4,4,4,4,4,4]
 
 # define model
 
@@ -140,7 +140,7 @@ model = Nonlinear(layer_sizes)
 
 # get random training indices
 
-p = 0.8
+p = 0.9
 training_bool_indices = np.random.choice(a=[True, False], size=ndat, p=[p, 1-p])
 total_data = InRAMDatasetPyTorch(configs)
 training_indices = [i for i, x in enumerate(training_bool_indices) if x]
@@ -165,8 +165,8 @@ training_data, validation_data = \
 # NOTE: If shuffling, the final training data indices will be all fucked up when plotting, so it's 
 #       best to just save the model and then re-evaluate it on everything maybe. 
 training_loader = DataLoader(training_data,
-                                  batch_size=int(len(training_data)/10),
-                                  shuffle=True, #True,
+                                  batch_size=int(len(training_data)/1),
+                                  shuffle=False, #True,
                                   collate_fn=torch_collate,
                                   num_workers=0)
 validation_loader = DataLoader(validation_data,
@@ -186,7 +186,7 @@ train_pred_epochs = []
 val_pred_epochs = []
 train_target_epochs = []
 val_target_epochs = []
-nepochs = 5000 # 15000 if batch size = len(training_data)/3
+nepochs = 10000 # 15000 if batch size = len(training_data)/3
 for epoch in range(nepochs):
     print(f"----- epoch: {epoch}")
     #start = time()
@@ -283,9 +283,9 @@ plt.plot(xaxis, outputs[:,0], 'k-')
 plt.plot(xaxis[training_indices], train_preds[:,0], 'ko')
 plt.plot(xaxis[testing_indices], val_preds[:,0], 'ro')
 plt.legend(["Truth", "Training", "Validation"])
-#plt.plot(xaxis, outputs_model.detach().numpy()[:,1], 'ko', markersize=0.5)
-#plt.plot(xaxis, outputs_model.detach().numpy()[:,2], 'go', markersize=0.5)
-#plt.plot(xaxis, outputs_model.detach().numpy()[:,3], 'ro', markersize=0.5)
+#plt.plot(xaxis, val_preds.detach().numpy()[:,1], 'ko', markersize=0.5)
+#plt.plot(xaxis, val_preds.detach().numpy()[:,2], 'go', markersize=0.5)
+#plt.plot(xaxis, val_preds.detach().numpy()[:,3], 'ro', markersize=0.5)
 plt.savefig("all_output.png", dpi=500)
 
 # plot the model vs. target
@@ -296,6 +296,9 @@ preds = model(X)
 plt.plot(xaxis, yaxis, 'k-')
 plt.plot(xaxis, preds.detach().numpy()[:,0], 'ko')
 plt.plot(xaxis[testing_indices], val_preds[:,0], 'ro')
+plt.plot(xaxis[testing_indices], val_preds[:,1], 'go')
+plt.plot(xaxis[testing_indices], val_preds[:,2], 'go')
+plt.plot(xaxis[testing_indices], val_preds[:,3], 'go')
 #plt.plot(X.numpy(), predicted, 'b')
 plt.savefig("evaluate.png", dpi=500)
 #plt.show()
