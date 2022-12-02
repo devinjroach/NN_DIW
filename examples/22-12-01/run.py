@@ -281,7 +281,7 @@ for param_indx in range(3,6+1):
     ax.set_ylabel(fr'$\Delta \chi_{chi_indx2+1}$')
     ax.set_zlabel(f"{hashmap[param_indx]}")
 
-    plt.savefig(f"surface_{hashmap[param_indx]}.png", dpi=500)
+    plt.savefig(f"surface_{hashmap[param_indx]}.png", dpi=400)
     plt.clf()
 
 # Plot the loss function surface.
@@ -312,5 +312,5 @@ ax.set_xlabel(fr'$V$')
 ax.set_ylabel(fr'$A$')
 ax.set_zlabel(f"Loss (MSE)")
 
-plt.savefig(f"loss_vs_V_A.png", dpi=500)
+plt.savefig(f"loss_vs_V_A.png", dpi=400)
 plt.clf()
